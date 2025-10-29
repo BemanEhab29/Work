@@ -1,337 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Work Hours Tracker</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f2f4f7;
-      margin: 0;
-      padding: 30px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
-    }
-    .container {
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px 30px;
-    }
-    .inputs, .checkboxes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 10px;
-      justify-content: center;
-    }
-    label {
-      font-weight: 600;
-    }
-    input[type="date"],
-    input[type="time"],
-    input[type="number"] {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 6px 10px;
-    }
-    button {
-      background: #0078d7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 15px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #005fa3;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background: #e9eef3;
-      font-weight: 700;
-    }
-    tr:nth-child(even) {
-      background: #fafafa;
-    }
-    .holiday { background: #fff0f0; font-weight: bold; }
-    .friday { background: #e7f5ff; font-weight: bold; }
-    .delete-btn {
-      background: #ff4d4d;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-    .delete-btn:hover { background: #d93636; }
-    tfoot td {
-      background: #f0f3f7;
-      font-weight: 700;
-    }
-    .bottom-buttons {
-      text-align: center;
-      margin-top: 20px;
-    }
-    input[type="file"] {
-      display: inline-block;
-      margin-left: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Work Hours Tracker — Final</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --card-bg: #ffffff;
+  --page-bg: #f2f6fb;
+  --primary: #0078d7;
+  --accent: #005fa3;
+  --danger: #ff4d4d;
+  --muted: #7b8794;
+}
+body{
+  margin:0; padding:30px; font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background:var(--page-bg); color:#222;
+}
+h1{ text-align:center; margin:0 0 18px; font-size:24px; }
+.card{
+  max-width:1150px; margin:auto; background:var(--card-bg); border-radius:14px;
+  padding:20px 24px; box-shadow: 0 6px 18px rgba(16,24,40,0.08);
+}
+.row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:10px; justify-content:center; }
+label { font-weight:600; font-size:14px; color:#253046; display:flex; gap:8px; align-items:center; }
+input[type="date"], input[type="time"], input[type="number"], input[type="text"]{
+  border:1px solid #d6e0ec; border-radius:8px; padding:8px 10px; font-size:14px;
+  background: #fff;
+}
+.controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:12px; }
+button{
+  background:var(--primary); color:white; border:none; padding:8px 14px; border-radius:8px; font-weight:700;
+  cursor:pointer;
+}
+button.secondary { background:#e9eef3; color:#223; font-weight:700; }
+button.danger { background:var(--danger); }
+.small { padding:6px 10px; font-size:13px; border-radius:7px; }
+table{ width:100%; border-collapse:collapse; margin-top:18px; font-size:14px; }
+th, td { padding:10px; border:1px solid #e6eef7; text-align:center; }
+th{ background:#eef4fb; font-weight:800; color:#16324f; }
+tbody tr:nth-child(even){ background:#fbfdff; }
+.holiday { background:#fff6e6; }
+.saturday { background:#eaf6ff; }
+.friday  { background:#f3f7fb; font-style:italic; color:#2d3a45; }
+.deleteBtn { background:var(--danger); color:white; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
+.deleteBtn:hover{ opacity:0.9; }
+tfoot td{ background:#f4f7fb; font-weight:800; }
+.file-input { display:inline-block; }
+@media (max-width:800px){
+  .row { flex-direction:column; align-items:stretch; }
+  label { width:100%; }
+  .controls { flex-direction:column; }
+}
+</style>
 </head>
 <body>
-  <h1>Work Hours Tracker</h1>
-  <div class="container">
-    <div class="inputs">
-      <label>Date <input type="date" id="date"></label>
-      <label>Start (24h) <input type="time" id="start"></label>
-      <label>End (24h) <input type="time" id="end"></label>
-      <label>Hourly Rate <input type="number" id="rate" value="10"></label>
-    </div>
+<h1>Work Hours Tracker</h1>
+<div class="card">
 
-    <div class="checkboxes">
-      <label><input type="checkbox" id="holiday"> National Holiday</label>
-      <label><input type="checkbox" id="friday"> Friday</label>
-      <label><input type="checkbox" id="permission"> Late with Permission</label>
-    </div>
-
-    <div class="bottom-buttons">
-      <button onclick="addEntry()">Add Entry</button>
-      <button onclick="exportExcel()">Export Excel</button>
-      <label style="cursor:pointer;">
-        <input type="file" id="importFile" accept=".xlsx" onchange="importExcel(event)">
-        Import Excel
-      </label>
-      <button style="background:#ff4d4d;margin-left:10px;" onclick="clearAll()">Clear All Entries</button>
-    </div>
-
-    <table id="workTable">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Worked Hours</th>
-          <th>Regular Hours</th>
-          <th>Overtime</th>
-          <th>Saturday Hours</th>
-          <th>Deductions</th>
-          <th>Total Money</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-      <tfoot>
-        <tr>
-          <td>Total</td>
-          <td id="totalWorked">0</td>
-          <td id="totalRegular">0</td>
-          <td id="totalOvertime">0</td>
-          <td id="totalSaturday">0</td>
-          <td id="totalDeduction">0</td>
-          <td id="totalMoney">0</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
+  <div class="row">
+    <label>
+      Date
+      <input type="date" id="date">
+    </label>
+    <label>
+      Start (24h)
+      <input type="time" id="start">
+    </label>
+    <label>
+      End (24h)
+      <input type="time" id="end">
+    </label>
+    <label>
+      Break (minutes)
+      <input type="number" id="breakMins" min="0" step="1" value="0">
+    </label>
+    <label>
+      Hourly rate
+      <input type="number" id="hourlyRate" min="0" step="0.01" style="width:110px">
+    </label>
+    <button class="small" id="saveRateBtn">Save Rate</button>
   </div>
 
-  <script>
-    let entries = JSON.parse(localStorage.getItem("workEntries")) || [];
+  <div class="row">
+    <label><input type="checkbox" id="holiday"> National Holiday</label>
+    <label><input type="checkbox" id="friday"> Friday Off</label>
+    <label><input type="checkbox" id="permission"> Late with Permission</label>
+  </div>
 
-    function saveData() {
-      localStorage.setItem("workEntries", JSON.stringify(entries));
+  <div class="controls">
+    <button onclick="onAddEntry()">Add Entry</button>
+    <button onclick="onClearAll()" class="danger">Clear All Entries</button>
+    <button onclick="onExportExcel()">Export Excel</button>
+    <button onclick="onExportJSON()">Export JSON</button>
+    <label class="file-input">
+      <input type="file" id="importJSON" accept=".json" style="display:none" onchange="onImportJSON(event)">
+      <button class="secondary small" onclick="document.getElementById('importJSON').click()">Choose JSON File</button>
+    </label>
+  </div>
+
+  <table id="logTable" aria-label="Work log table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Worked Hours</th>
+        <th>Regular Hours</th>
+        <th>Overtime Hours</th>
+        <th>Saturday Hours</th>
+        <th>Deduction (Money)</th>
+        <th>Daily Pay</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="logBody"></tbody>
+    <tfoot>
+      <tr>
+        <td>TOTAL</td>
+        <td id="totWorked">0</td>
+        <td id="totRegular">0</td>
+        <td id="totOvertime">0</td>
+        <td id="totSaturday">0</td>
+        <td id="totDeduction">0</td>
+        <td id="totPay">0</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<script>
+const LS_KEY = "workEntries_v_final";
+const LS_RATE = "workHourlyRate_v_final";
+let entries = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+const rateInput = document.getElementById("hourlyRate");
+const savedRate = localStorage.getItem(LS_RATE);
+if (savedRate !== null) rateInput.value = savedRate;
+
+document.getElementById("saveRateBtn").addEventListener("click", () => {
+  const val = parseFloat(rateInput.value);
+  if (isNaN(val)||val<0){alert("Enter valid rate"); return;}
+  localStorage.setItem(LS_RATE,val);
+  alert("Hourly rate saved.");
+});
+
+function formatDisplayDate(isoDate){
+  const d = new Date(isoDate);
+  if(isNaN(d)) return isoDate;
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+function minutesDiff(startHHMM,endHHMM){
+  const [sh,sm]=startHHMM.split(":").map(Number);
+  const [eh,em]=endHHMM.split(":").map(Number);
+  const s=sh*60+sm; const e=eh*60+em;
+  if(e>=s) return e-s;
+  return (24*60-s)+e;
+}
+
+function computeFieldsForEntry(entry){
+  let {date,start,end,breakMins,rate,holiday,friday,permission}=entry;
+  breakMins=Number(breakMins)||0;
+  rate=Number(rate)||Number(localStorage.getItem(LS_RATE))||0;
+  let workedMinutes=0,regularMinutes=0,overtimeMinutes=0,saturdayMinutes=0,deductionMoney=0,dailyPay=0;
+
+  if(friday) return {workedMinutes:0,regularMinutes:0,overtimeMinutes:0,saturdayMinutes:0,deductionMoney:0,dailyPay:0};
+  if(holiday){regularMinutes=480;workedMinutes=480;dailyPay=(regularMinutes/60)*rate;return {workedMinutes,regularMinutes,overtimeMinutes:0,saturdayMinutes:0,deductionMoney:0,dailyPay};}
+  if(!start||!end) return {workedMinutes:0,regularMinutes:0,overtimeMinutes:0,saturdayMinutes:0,deductionMoney:0,dailyPay:0};
+
+  const totalWorked=Math.max(0,minutesDiff(start,end)-breakMins);
+  const dayNum=new Date(date).getDay();
+
+  if(!permission){
+    const startMins=start.split(":").map(Number);
+    const mins=startMins[0]*60+startMins[1];
+    if(mins>(9*60)&&mins<=(9*60+15)) deductionMoney=-1*rate;
+    else if(mins>(9*60+15)&&mins<=(9*60+30)) deductionMoney=-2*rate;
+    else if(mins>(9*60+30)&&mins<=(10*60)) deductionMoney=-4*rate;
+    else if(mins>(10*60)) deductionMoney=-8*rate;
+  }
+
+  if(dayNum===6){saturdayMinutes=totalWorked;dailyPay=(saturdayMinutes/60)*rate*2+deductionMoney;return {workedMinutes:0,regularMinutes:0,overtimeMinutes:0,saturdayMinutes,deductionMoney,dailyPay};}
+
+  workedMinutes=totalWorked;
+  regularMinutes=Math.min(workedMinutes,480);
+  overtimeMinutes=Math.max(0,workedMinutes-480);
+  dailyPay=(regularMinutes/60)*rate+(overtimeMinutes/60)*rate*1.5+deductionMoney;
+  return {workedMinutes,regularMinutes,overtimeMinutes,saturdayMinutes:0,deductionMoney,dailyPay};
+}
+
+function onAddEntry(){
+  const date=document.getElementById("date").value;
+  const start=document.getElementById("start").value;
+  const end=document.getElementById("end").value;
+  const breakMins=Number(document.getElementById("breakMins").value)||0;
+  const rate=(Number(document.getElementById("hourlyRate").value)||Number(localStorage.getItem(LS_RATE)||0));
+  const holiday=document.getElementById("holiday").checked;
+  const friday=document.getElementById("friday").checked;
+  const permission=document.getElementById("permission").checked;
+  if(!date){alert("Select date"); return;}
+  if(!holiday&&!friday){if(!start||!end){alert("Enter start and end times or select Holiday/Friday");return;}}
+  const base={date,start,end,breakMins,rate,holiday,friday,permission};
+  const computed=computeFieldsForEntry(base);
+  const entry={...base,...computed};
+  entries.push(entry);
+  localStorage.setItem(LS_KEY,JSON.stringify(entries));
+  renderTable();
+  document.getElementById("start").value="";document.getElementById("end").value="";document.getElementById("breakMins").value="0";
+  document.getElementById("holiday").checked=false;document.getElementById("friday").checked=false;document.getElementById("permission").checked=false;
+}
+
+function onDeleteRow(idx){if(!confirm("Delete this entry?")) return; entries.splice(idx,1); localStorage.setItem(LS_KEY,JSON.stringify(entries)); renderTable();}
+function onClearAll(){if(!confirm("Clear all entries?")) return; entries=[]; localStorage.setItem(LS_KEY,JSON.stringify(entries)); renderTable();}
+
+function renderTable(){
+  const tbody=document.getElementById("logBody");
+  tbody.innerHTML="";
+  let totals={worked:0,regular:0,overtime:0,saturday:0,deduction:0,pay:0};
+  entries.forEach((e,i)=>{
+    const tr=document.createElement("tr");
+    const isFriday=Boolean(e.friday);
+    const isHoliday=Boolean(e.holiday);
+    const isSaturday=(new Date(e.date).getDay()===6);
+    if(isFriday) tr.classList.add("friday");
+    else if(isHoliday) tr.classList.add("holiday");
+    else if(isSaturday) tr.classList.add("saturday");
+
+    if(isFriday){tr.innerHTML=`<td>${formatDisplayDate(e.date)}</td><td colspan="6">Friday</td><td><button class="deleteBtn" onclick="onDeleteRow(${i})">Delete</button></td>`;}
+    else {
+      const workedH=(e.workedMinutes||0)/60;
+      const regularH=(e.regularMinutes||0)/60;
+      const overtimeH=(e.overtimeMinutes||0)/60;
+      const saturdayH=(e.saturdayMinutes||0)/60;
+      const ded=Number(e.deductionMoney||0);
+      const pay=Number(e.dailyPay||0);
+      tr.innerHTML=`<td>${formatDisplayDate(e.date)}</td><td>${workedH.toFixed(2)}</td><td>${regularH.toFixed(2)}</td><td>${overtimeH.toFixed(2)}</td><td>${saturdayH.toFixed(2)}</td><td>${ded.toFixed(2)}</td><td>${pay.toFixed(2)}</td><td><button class="deleteBtn" onclick="onDeleteRow(${i})">Delete</button></td>`;
+      totals.worked+=e.workedMinutes||0;
+      totals.regular+=e.regularMinutes||0;
+      totals.overtime+=e.overtimeMinutes||0;
+      totals.saturday+=e.saturdayMinutes||0;
+      totals.deduction+=e.deductionMoney||0;
+      totals.pay+=e.dailyPay||0;
     }
+    tbody.appendChild(tr);
+  });
+  document.getElementById("totWorked").innerText=(totals.worked/60).toFixed(2);
+  document.getElementById("totRegular").innerText=(totals.regular/60).toFixed(2);
+  document.getElementById("totOvertime").innerText=(totals.overtime/60).toFixed(2);
+  document.getElementById("totSaturday").innerText=(totals.saturday/60).toFixed(2);
+  document.getElementById("totDeduction").innerText=totals.deduction.toFixed(2);
+  document.getElementById("totPay").innerText=totals.pay.toFixed(2);
+}
 
-    function clearAll() {
-      if (confirm("Are you sure you want to delete all entries?")) {
-        entries = [];
-        saveData();
-        renderTable();
-      }
-    }
+// EXPORT
+function onExportExcel(){
+  if(!entries.length){alert("No entries to export."); return;}
+  const rows=entries.map(e=>({
+    Date: formatDisplayDate(e.date),
+    "Worked Hours": ((e.workedMinutes||0)/60).toFixed(2),
+    "Regular Hours": ((e.regularMinutes||0)/60).toFixed(2),
+    "Overtime Hours": ((e.overtimeMinutes||0)/60).toFixed(2),
+    "Saturday Hours": ((e.saturdayMinutes||0)/60).toFixed(2),
+    "Deduction (Money)": Number(e.deductionMoney||0).toFixed(2),
+    "Daily Pay": Number(e.dailyPay||0).toFixed(2)
+  }));
+  rows.push({
+    Date:"TOTAL",
+    "Worked Hours": document.getElementById("totWorked").innerText,
+    "Regular Hours": document.getElementById("totRegular").innerText,
+    "Overtime Hours": document.getElementById("totOvertime").innerText,
+    "Saturday Hours": document.getElementById("totSaturday").innerText,
+    "Deduction (Money)": document.getElementById("totDeduction").innerText,
+    "Daily Pay": document.getElementById("totPay").innerText
+  });
+  const ws=XLSX.utils.json_to_sheet(rows,{skipHeader:false});
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"WorkLog");
+  XLSX.writeFile(wb,"WorkLog.xlsx");
+}
 
-    function formatDate(d) {
-      const date = new Date(d);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    }
+function onExportJSON(){
+  const blob=new Blob([JSON.stringify(entries,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="WorkLog.json";
+  a.click();
+}
 
-    function calculateRow(entry) {
-      let { date, start, end, rate, holiday, friday, permission } = entry;
-      let worked = 0, regular = 0, overtime = 0, saturday = 0, deduction = 0, money = 0;
-
-      const d = new Date(date);
-      const day = d.getDay(); // 0=Sun, 5=Fri, 6=Sat
-
-      if (friday) return { worked:0, regular:0, overtime:0, saturday:0, deduction:0, money:0, isFriday:true };
-
-      if (holiday) {
-        worked = 8;
-        regular = 8;
-        money = 8 * rate;
-        return { worked, regular, overtime, saturday, deduction, money, isHoliday:true };
-      }
-
-      const startTime = new Date("1970-01-01T" + start);
-      const endTime = new Date("1970-01-01T" + end);
-      let hoursWorked;
-      if (endTime < startTime) {
-        const untilMidnight = 24 - (startTime.getHours() + startTime.getMinutes() / 60);
-        const afterMidnight = (endTime.getHours() + endTime.getMinutes() / 60);
-        hoursWorked = untilMidnight + afterMidnight;
-      } else {
-        hoursWorked = (endTime - startTime) / 36e5;
-      }
-
-      worked = hoursWorked;
-      if (day === 6) saturday = worked;
-      regular = Math.min(8, worked);
-      overtime = worked > 8 ? worked - 8 : 0;
-
-      const late = startTime.getHours() + startTime.getMinutes() / 60;
-      if (!permission && late > 9) {
-        if (late <= 9.25) deduction = -1;
-        else if (late <= 9.5) deduction = -2;
-        else if (late <= 10) deduction = -4;
-        else deduction = -8;
-      }
-
-      money = (day === 6)
-        ? (worked * 2 * rate) + (deduction * rate)
-        : (regular * rate) + (overtime * 1.5 * rate) + (deduction * rate);
-
-      return { worked, regular, overtime, saturday, deduction, money };
-    }
-
-    function renderTable() {
-      const tbody = document.querySelector("#workTable tbody");
-      tbody.innerHTML = "";
-      const totals = { worked:0, regular:0, overtime:0, saturday:0, deduction:0, money:0 };
-
-      entries.forEach((entry, index) => {
-        const row = calculateRow(entry);
-        const tr = document.createElement("tr");
-
-        if (row.isFriday) {
-          tr.className = "friday";
-          tr.innerHTML = `<td>${formatDate(entry.date)}</td><td colspan="6">Friday</td>
-                          <td><button class="delete-btn" onclick="deleteEntry(${index})">Delete</button></td>`;
-        } else if (row.isHoliday) {
-          tr.className = "holiday";
-          tr.innerHTML = `<td>${formatDate(entry.date)}</td>
-            <td>${row.worked}</td><td>${row.regular}</td><td>${row.overtime}</td>
-            <td>${row.saturday}</td><td>${row.deduction}</td><td>${row.money.toFixed(2)}</td>
-            <td><button class="delete-btn" onclick="deleteEntry(${index})">Delete</button></td>`;
-        } else {
-          tr.innerHTML = `<td>${formatDate(entry.date)}</td>
-            <td>${row.worked.toFixed(2)}</td><td>${row.regular.toFixed(2)}</td><td>${row.overtime.toFixed(2)}</td>
-            <td>${row.saturday.toFixed(2)}</td><td>${row.deduction}</td><td>${row.money.toFixed(2)}</td>
-            <td><button class="delete-btn" onclick="deleteEntry(${index})">Delete</button></td>`;
-        }
-
-        tbody.appendChild(tr);
-
-        totals.worked += row.worked;
-        totals.regular += row.regular;
-        totals.overtime += row.overtime;
-        totals.saturday += row.saturday;
-        totals.deduction += row.deduction;
-        totals.money += row.money;
+// IMPORT JSON
+function onImportJSON(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!Array.isArray(data)) throw new Error("Invalid JSON format");
+      entries=data.map(entry=>{
+        const comp=computeFieldsForEntry(entry);
+        return {...entry,...comp};
       });
-
-      document.getElementById("totalWorked").textContent = totals.worked.toFixed(2);
-      document.getElementById("totalRegular").textContent = totals.regular.toFixed(2);
-      document.getElementById("totalOvertime").textContent = totals.overtime.toFixed(2);
-      document.getElementById("totalSaturday").textContent = totals.saturday.toFixed(2);
-      document.getElementById("totalDeduction").textContent = totals.deduction.toFixed(2);
-      document.getElementById("totalMoney").textContent = totals.money.toFixed(2);
-
-      saveData();
-    }
-
-    function addEntry() {
-      const date = document.getElementById("date").value;
-      const start = document.getElementById("start").value;
-      const end = document.getElementById("end").value;
-      const rate = parseFloat(document.getElementById("rate").value);
-      const holiday = document.getElementById("holiday").checked;
-      const friday = document.getElementById("friday").checked;
-      const permission = document.getElementById("permission").checked;
-
-      if (!date) return alert("Please enter a date.");
-
-      entries.push({ date, start, end, rate, holiday, friday, permission });
+      localStorage.setItem(LS_KEY,JSON.stringify(entries));
       renderTable();
-    }
+      alert("JSON imported successfully!");
+    }catch(err){alert("Failed to import JSON: "+err.message);}
+  };
+  reader.readAsText(file);
+}
 
-    function deleteEntry(index) {
-      entries.splice(index, 1);
-      renderTable();
-    }
-
-    function exportExcel() {
-      const tableData = entries.map(e => ({
-        Date: formatDate(e.date),
-        ...calculateRow(e)
-      }));
-      const totals = {
-        Date: "TOTAL",
-        worked: document.getElementById("totalWorked").textContent,
-        regular: document.getElementById("totalRegular").textContent,
-        overtime: document.getElementById("totalOvertime").textContent,
-        saturday: document.getElementById("totalSaturday").textContent,
-        deduction: document.getElementById("totalDeduction").textContent,
-        money: document.getElementById("totalMoney").textContent
-      };
-      tableData.push(totals);
-      const ws = XLSX.utils.json_to_sheet(tableData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "WorkData");
-      XLSX.writeFile(wb, "WorkData.xlsx");
-    }
-
-    function importExcel(e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        const data = new Uint8Array(ev.target.result);
-        const wb = XLSX.read(data, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const imported = XLSX.utils.sheet_to_json(ws);
-        entries = imported.filter(r => r.Date && r.Date !== "TOTAL").map(r => ({
-          date: r.Date.split("/").reverse().join("-"),
-          start: "09:00",
-          end: "17:00",
-          rate: 10,
-          holiday: false,
-          friday: false,
-          permission: false
-        }));
-        renderTable();
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    renderTable();
-  </script>
+renderTable();
+</script>
 </body>
 </html>
